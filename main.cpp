@@ -13,51 +13,53 @@
 // по одній на рядок (точки сортуються лексикографічно).
 
 #include <iostream>
-#include <set>
 #include <string>
+#include <set>
 #include <map>
+#include <regex>
 
-
-struct Point3 {
-    int x;
-    int y;
-    int z;
-
-    Point3(int x, int y, int z) : x(x), y(y), z(z) {}
-
-    bool operator<(const Point3& other) const {
-        if (y != other.y) return y < other.y;
-        if (x != other.x) return x < other.x;
+struct Point {
+    int x, y, z;
+    Point(int x, int y, int z) : x(x), y(y), z(z) {}
+    bool operator<(const Point& other) const {
+        if (x != other.x) { return x < other.x; }
+        if (y != other.y) { return y < other.y; }
         return z < other.z;
     }
 };
 
-std::ostream& operator<<(std::ostream& os, const Point3& point) {
-    os << "( " << point.x << ", " << point.y << ", " << point.z << ")";
-    return os;
-}
-
-void read_points(std::set<Point3>& points) {
-    std::string str;
-    while (std::getline(std::cin, str)) {
-        int x, y, z;
-        if (sscanf_s(str.c_str(), "( %d , %d , %d)", &x, &y, &z) != 3) {
-            return;
-        }
-        points.insert(Point3(x, y, z));
+bool read_point(const std::string& line, Point& point) {
+    static const std::regex pattern(R"(^\(\s(-?\d+),\s(-?\d+),\s(-?\d+)\)$)");
+    std::smatch matches;
+    if (std::regex_match(line, matches, pattern)) {
+        point.x = std::stoi(matches[1]);
+        point.y = std::stoi(matches[2]);
+        point.z = std::stoi(matches[3]);
+        return true;
     }
+    return false;
 }
 
-void count_points(std::set<Point3>& points, std::map<int, int>& count) {
+void print_result(std::smatch& matches, const std::set<Point>& all_points) {
+    std::cout << "*****" << std::endl;
+    std::cout << matches.size() << std::endl;
 
 }
 
 int main() {
-    std::map<int, int> y_count; // maybe will be changed in future
-    std::set<Point3> points;
-    read_points(points);
-    count_points(points, y_count);
+    std::set<Point> all_points;
+    std::map<int, int> y_counts;
+    std::string str;
+
+    while (std::getline(std::cin, str)) {
+        Point point(0, 0, 0);
+        if (!read_point(str, point)) { break; }
+        all_points.insert(point);
+        y_counts[point.y]++;
+    }
+
 
 
     return 0;
 }
+
