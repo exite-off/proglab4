@@ -12,11 +12,10 @@
 // на подальших рядках: усі такі точки у форматі ( ціле, ціле, ціле),
 // по одній на рядок (точки сортуються лексикографічно).
 
-#include "iostream"
-#include "set"
-#include "string"
-#include "map"
-
+#include <iostream>
+#include <set>
+#include <string>
+#include <map>
 
 
 struct Point3 {
