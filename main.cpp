@@ -1,26 +1,12 @@
-﻿// 1) На вхід подається послідовність точок цілочислового тривимірного простору.
-// Знайти та вивести y-координату, яку має найбільша кількість точок.
-// Якщо таких кілька, то вивести всі такі у-координати. Також вивести кількість точок.
-// Вхід: послідовність точок тривимірного простору, по одній на рядок;
-// введення припиняється на першій помилці.
-// формат точок:
-// ( ціле, ціле, ціле)
-// Вихід:
-// на першому рядку  *****
-// на другому рядку кількість зчитаних точок
-// на третьому рядку найбільша кількість точок зі спільною у-координатою
-// на подальших рядках: усі такі точки у форматі ( ціле, ціле, ціле),
-// по одній на рядок (точки сортуються лексикографічно).
-
-#include <iostream>
+﻿#include <iostream>
 #include <string>
 #include <set>
 #include <map>
 #include <regex>
+#include <stdexcept>
 
 struct Point {
     int x, y, z;
-    Point(int x, int y, int z) : x(x), y(y), z(z) {}
     bool operator<(const Point& other) const {
         if (x != other.x) { return x < other.x; }
         if (y != other.y) { return y < other.y; }
@@ -29,8 +15,8 @@ struct Point {
 };
 
 bool read_point(const std::string& line, Point& point) {
-    static const std::regex pattern(R"(^\(\s(-?\d+),\s(-?\d+),\s(-?\d+)\)$)");
     std::smatch matches;
+    static const std::regex pattern(R"(^\(\s(-?\d+),\s(-?\d+),\s(-?\d+)\)$)");
     if (std::regex_match(line, matches, pattern)) {
         point.x = std::stoi(matches[1]);
         point.y = std::stoi(matches[2]);
@@ -40,10 +26,33 @@ bool read_point(const std::string& line, Point& point) {
     return false;
 }
 
-void print_result(std::smatch& matches, const std::set<Point>& all_points) {
-    std::cout << "*****" << std::endl;
-    std::cout << matches.size() << std::endl;
+void check_input(const std::set<Point>& points) {
+    if (points.empty()) {
+        throw std::logic_error("No points given or wrong format. Expected format: ( x, y, z)");
+    }
+}
 
+std::pair<int, int> find_max_y(const std::map<int, int>& y_counts) {
+    int res {0}, count_max {0};
+    for (const auto& [y, count] : y_counts) {
+        if (count > count_max) {
+            count_max = count;
+            res = y;
+        }
+    }
+    return {res, count_max};
+}
+
+void print_result(const std::set<Point>& points, const std::map<int, int>& y_counts) {
+    std::cout << "*****" << std::endl;
+    std::cout << points.size() << std::endl;
+    std::pair<int, int> max_y = find_max_y(y_counts);
+    std::cout << max_y.second << std::endl;
+    for (const auto& point : points) {
+        if (point.y == max_y.first) {
+            std::cout << "( " << point.x << ", " << point.y << ", " << point.z << ")" << std::endl;
+        }
+    }
 }
 
 int main() {
@@ -57,8 +66,12 @@ int main() {
         all_points.insert(point);
         y_counts[point.y]++;
     }
-
-
+    try {
+        check_input(all_points);
+        print_result(all_points, y_counts);
+    } catch (const std::logic_error& e) {
+        std::cerr << e.what() << std::endl;
+    }
 
     return 0;
 }
